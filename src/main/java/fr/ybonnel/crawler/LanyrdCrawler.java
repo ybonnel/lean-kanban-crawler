@@ -19,7 +19,6 @@ package fr.ybonnel.crawler;
 import fr.ybonnel.modele.Schedule;
 import fr.ybonnel.modele.Speaker;
 import fr.ybonnel.simpleweb4j.test.SimpleWeb4jTest;
-import org.fluentlenium.core.domain.FluentList;
 import org.fluentlenium.core.domain.FluentWebElement;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDateTime;
@@ -39,12 +38,17 @@ public class LanyrdCrawler extends SimpleWeb4jTest {
         return instance;
     }
 
+    private List<Schedule> cachesSchedules = null;
+
     @Override
     protected String defaultUrl() {
         return "http://lanyrd.com/2013/lean-kanban-france/schedule/";
     }
 
     public List<Schedule> crawl() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        if (cachesSchedules != null) {
+            return cachesSchedules;
+        }
         Method starting = TestWatcher.class.getDeclaredMethod("starting", Description.class);
         starting.setAccessible(true);
         starting.invoke(this.lifecycle, Description.EMPTY);
@@ -80,6 +84,7 @@ public class LanyrdCrawler extends SimpleWeb4jTest {
             }
 
         }
+        cachesSchedules = schedules;
         return schedules;
     }
 }
