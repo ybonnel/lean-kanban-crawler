@@ -1,9 +1,7 @@
-package com.mycompany;
+package fr.ybonnel;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
-import com.mycompany.services.BeerRessource;
-import com.mycompany.services.MongoService;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
@@ -11,9 +9,18 @@ import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
+import fr.ybonnel.crawler.LanyrdCrawler;
+import fr.ybonnel.modele.Schedule;
+import fr.ybonnel.services.MongoService;
+import fr.ybonnel.simpleweb4j.exception.HttpErrorException;
+import fr.ybonnel.simpleweb4j.handlers.Response;
+import fr.ybonnel.simpleweb4j.handlers.Route;
+import fr.ybonnel.simpleweb4j.handlers.RouteParameters;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import static fr.ybonnel.simpleweb4j.SimpleWeb4j.*;
 
@@ -35,10 +42,19 @@ public class Main {
         // Set the http port.
         setPort(port);
         // Set the path to static resources.
-        setPublicResourcesPath("/com/mycompany/public");
+        setPublicResourcesPath("/fr/ybonnel/public");
 
-        // Add resource for beers on "/beer"
-        resource(new BeerRessource("/beer"));
+        get(new Route<Void, List<Schedule>>("/schedules", Void.class) {
+            @Override
+            public Response<List<Schedule>> handle(Void param, RouteParameters routeParams) throws HttpErrorException {
+                try {
+                    return new Response<>(LanyrdCrawler.getInstance().crawl());
+                }
+                catch (NoSuchMethodException|InvocationTargetException|IllegalAccessException e) {
+                    throw new HttpErrorException(500, e);
+                }
+            }
+        });
 
         // Start the server.
         start(waitStop);
