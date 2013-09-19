@@ -84,6 +84,7 @@ public class LanyrdCrawler extends SimpleWeb4jTest {
             }
 
         }
+        getDriver().quit();
         cachesSchedules = schedules;
         return schedules;
     }
